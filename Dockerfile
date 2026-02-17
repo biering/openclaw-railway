@@ -40,7 +40,6 @@ RUN pnpm build
 ENV OPENCLAW_PREFER_PNPM=1
 RUN pnpm ui:install && pnpm ui:build
 
-
 # Build wrapper (TypeScript -> JS)
 FROM node:22-bookworm AS wrapper-build
 WORKDIR /app
@@ -50,7 +49,6 @@ COPY src ./src
 RUN npm install
 RUN npm run build
 
-
 # Runtime image
 FROM node:22-bookworm
 ENV NODE_ENV=production
@@ -59,8 +57,19 @@ RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
+    curl \
+    nano \
     git \
     tmux \
+  && rm -rf /var/lib/apt/lists/*
+
+# Tailscale (https://tailscale.com/download/linux)
+RUN curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg \
+    | tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null \
+  && curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.list \
+    | tee /etc/apt/sources.list.d/tailscale.list >/dev/null \
+  && apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tailscale \
   && rm -rf /var/lib/apt/lists/*
 
 # Ensure pnpm is available in the runtime container too.
