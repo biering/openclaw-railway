@@ -123,6 +123,10 @@ RUN set -eux; \
 
 COPY --from=wrapper-build /app/dist ./dist
 
+# Tailscale
+COPY start-tailscale.sh /app/start-tailscale.sh
+RUN chmod +x /app/start-tailscale.sh
+
 # The wrapper listens on this port.
 ENV OPENCLAW_PUBLIC_PORT=8080
 ENV PORT=8080
