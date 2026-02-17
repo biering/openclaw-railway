@@ -21,6 +21,13 @@ tailscaled \
   --outbound-http-proxy-listen="$PROXY_ADDR" \
   >/tmp/tailscaled.log 2>&1 &
 
+tailscaled \
+  --tun=userspace-networking \
+  --state=mem: \
+  --socket=/tmp/tailscaled.sock \
+  --socks5-server=127.0.0.1:1055 \
+  >/tmp/tailscaled.log 2>&1 &
+
 TAILSCALED_PID="$!"
 
 # Wait for the unix socket to exist
@@ -58,7 +65,7 @@ echo "[tailscale] up. status:"
 tailscale --socket="$SOCK" status || true
 
 # Proxy env vars for userspace mode
-export ALL_PROXY="socks5h://$PROXY_ADDR"
+export ALL_PROXY="socks5h://127.0.0.1:1055"
 export HTTPS_PROXY="http://$PROXY_ADDR"
 export HTTP_PROXY="http://$PROXY_ADDR"
 export NO_PROXY="localhost,127.0.0.1"
